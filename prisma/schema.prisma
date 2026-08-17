@@ -1,0 +1,84 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id           String   @id @default(cuid())
+  email        String   @unique
+  name         String
+  passwordHash String
+  role         String   @default("planner")
+  createdAt    DateTime @default(now())
+}
+
+model CargoSku {
+  id           String   @id @default(cuid())
+  sku          String   @unique
+  name         String
+  lengthMm     Int
+  widthMm      Int
+  heightMm     Int
+  weightG      Int
+  notStackable Boolean  @default(false)
+  bottomOnly   Boolean  @default(false)
+  rotatable    Boolean  @default(true)
+  tiltable     Boolean  @default(false)
+  color        String   @default("#c9a227")
+  notes        String   @default("")
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+}
+
+model Equipment {
+  id       String  @id @default(cuid())
+  name     String
+  code     String  @unique
+  kind     String
+  lengthMm Int
+  widthMm  Int
+  heightMm Int
+  payloadG Int
+  color    String  @default("#4a6270")
+  isSystem Boolean @default(false)
+}
+
+model Loadlist {
+  id                 String      @id @default(cuid())
+  name               String
+  listType           String      @default("SEA")
+  etd                DateTime?
+  notes              String      @default("")
+  lengthUnit         String      @default("CM")
+  weightUnit         String      @default("KG")
+  selectedEquipment  Json        @default("[]")
+  result             Json?
+  createdAt          DateTime    @default(now())
+  updatedAt          DateTime    @updatedAt
+  items              CargoItem[]
+}
+
+model CargoItem {
+  id           String   @id @default(cuid())
+  loadlistId   String
+  loadlist     Loadlist @relation(fields: [loadlistId], references: [id], onDelete: Cascade)
+  sortOrder    Int      @default(0)
+  name         String
+  sku          String   @default("")
+  lengthMm     Int
+  widthMm      Int
+  heightMm     Int
+  weightG      Int
+  qty          Int      @default(1)
+  notStackable Boolean  @default(false)
+  bottomOnly   Boolean  @default(false)
+  rotatable    Boolean  @default(true)
+  tiltable     Boolean  @default(false)
+  color        String   @default("#c9a227")
+
+  @@index([loadlistId])
+}
